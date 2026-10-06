@@ -26,13 +26,15 @@ class MLP(CifarModel):
         # Initialize all hyperparameters
         self.loss_list = []
         self.batch_size = 64
-        self.input_width = ???
-        self.input_height = ???
-        self.image_channels = ???
+        self.input_width = 32
+        self.input_height = 32
+        self.image_channels = 3
         self.num_classes = len(classes)
         self.hidden_layer_size = 128
         
         # TODO mlp.MLP.__init__(): Initialize your Layers here.
+        self.hidden_layer = tf.keras.layers.Dense(self.hidden_layer_size,activation='relu')
+        self.output_layer = tf.keras.layers.Dense(self.num_classes)
 
     def call(self, inputs, is_testing=False):
         """
@@ -42,4 +44,6 @@ class MLP(CifarModel):
         :return: logits - a matrix of shape (num_inputs, num_classes); during training, it would be (batch_size, num_classes)
         """
         # TODO mlp.MLP.call(): Implement your forward pass here.
-        raise NotImplementedError("Implement me!")
+        flattened_inputs = tf.reshape(inputs, (-1, self.input_width*self.input_height*self.image_channels))
+        output_hidden_layer = self.hidden_layer(flattened_inputs)
+        return self.output_layer(output_hidden_layer)

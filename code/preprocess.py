@@ -51,3 +51,13 @@ def get_data(file_path, classes) -> tuple[np.ndarray, tf.Tensor]:
     labels: np.ndarray = np.array(unpickled_file[b'labels'])
 
     # TODO: Extract only the data that matches the corresponding classes we want
+    inClasses = np.isin(labels,classes)
+    inputs = inputs[inClasses]
+    labels = labels[inClasses]
+    inputs = inputs.reshape(-1, 3, 32, 32)
+    inputs = inputs.transpose((0,2,3,1))
+    inputs = np.float32(inputs/255)
+    for position, value in enumerate(sorted(classes)):
+        labels = np.where(value == labels, position,labels)
+    labels = tf.one_hot(labels, len(classes))
+    return inputs, labels

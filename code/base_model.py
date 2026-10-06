@@ -16,8 +16,10 @@ class CifarModel(tf.keras.Model):
 		:return: the loss of the model as a Tensor
 		"""
 		# TODO: Implement the loss function
-		raise NotImplementedError("Method not implemented")
-	
+		#loss hesaplıyor yine tfnin kendi verdikleriyle
+		loss = tf.nn.softmax_cross_entropy_with_logits(labels,logits)
+		return tf.reduce_mean(loss)
+
 	def accuracy(self, logits, labels):
 		"""
 		Calculates the model's prediction accuracy by comparing
@@ -28,4 +30,8 @@ class CifarModel(tf.keras.Model):
 		:return: the accuracy of the model as a Tensor
 		"""
 		# TODO: Implement the accuracy function
-		raise NotImplementedError("Method not implemented")
+		#accuracy
+		logits_max = tf.argmax(logits, 1)
+		labels_max = tf.argmax(labels, 1)
+		convert = tf.cast(tf.equals(logits_max,labels_max))
+		return tf.reduce_mean(convert)

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from matplotlib import pyplot as plt
 from preprocess import get_data, get_next_batch
-from cnn import CNN
+#from cnn import CNN
 from mlp import MLP
 
 import os
@@ -12,8 +12,6 @@ import math
 
 # ensures that we run only on cpu
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-
-
 
 def train(model, optimizer, train_inputs, train_labels):
     '''
@@ -133,16 +131,28 @@ def main():
     AUTOGRADER_TRAIN_FILE = '../data/train'
     AUTOGRADER_TEST_FILE = '../data/test'
 
-    LOCAL_TRAIN_FILE = ...
-    LOCAL_TEST_FILE = ...
+    LOCAL_TRAIN_FILE = "data/train"
+    LOCAL_TEST_FILE = "data/test"
 
     classes = [3,4,5] # classes for cat, deer, & dog
 
     # TODO: assignment.main() pt 1
     # Load your testing and training data using the get_data function
+    x_train, y_train = get_data(LOCAL_TRAIN_FILE,classes)
+    x_test, y_test = get_data(LOCAL_TEST_FILE,classes)
+    print("x_train:", x_train.shape)
+    print("y_train:", y_train.shape)
+    print("x_test:", x_test.shape)
+    print("y_test:", y_test.shape)
 
     # TODO: assignment.main() pt 2
     # Initialize your model and optimizer
+    model = MLP(classes)
+    logits = model(x_train[:5])
+    print("logits shape:", logits.shape)
+    print("loss:", model.loss(logits, y_train[:5]))
+    print("accuracy:", model.accuracy(logits, y_train[:5]))
+    optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
 
     # TODO: assignment.main() pt 3
     # Train your model
