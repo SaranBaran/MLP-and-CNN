@@ -27,7 +27,20 @@ def train(model, optimizer, train_inputs, train_labels):
     :return: None
     '''
     #TODO: Implement the training loop
-    raise NotImplementedError
+    inputs_range = tf.range(train_inputs.shape[0])
+    shuffled_range = tf.random.shuffle(inputs_range)
+    shuffled_inputs = tf.gather(train_inputs, shuffled_range)
+    shuffled_labels = tf.gather(train_labels, shuffled_range)
+    num_batches = int(np.ceil(train_inputs.shape[0] / model.batch_size))
+    for i in range(num_batches):
+        batch_inputs, batch_label = get_next_batch(i,shuffled_inputs, shuffled_labels,model.batch_size)
+        #batch_inputs = tf.image.random_flip_left_right(batch_inputs)
+        with tf.GradientTape() as tape:
+            output = model.call(batch_inputs, False)
+            loss = model.loss(output,batch_label)
+            acc = model.accuracy(output,batch_label)
+        gradients = tape.gradient(loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
 
 def test(model, test_inputs, test_labels):
@@ -44,7 +57,24 @@ def test(model, test_inputs, test_labels):
         test preds - all of the model's predictions for each of the test inputs
     """
     # TODO: Implement the testing loop
-    raise NotImplementedError
+    inputs_range = tf.range(test_inputs.shape[0])
+    shuffled_range = tf.random.shuffle(inputs_range)
+    shuffled_inputs = tf.gather(test_inputs, shuffled_range)
+    shuffled_labels = tf.gather(test_labels, shuffled_range)
+    num_batches = int(np.ceil(test_inputs.shape[0] / model.batch_size))
+    total_correct = 0
+    all_preds = [] 
+    for i in range(num_batches):
+        batch_inputs, batch_label = get_next_batch(i,shuffled_inputs, shuffled_labels,model.batch_size)
+        output = model.call(batch_inputs, True)
+        acc = model.accuracy(output, batch_label)
+        all_preds.append(output) 
+        total_correct += acc * batch_inputs.shape[0]
+    all_preds = tf.concat(all_preds, axis=0) 
+    return total_correct / test_inputs.shape[0] , all_preds
+
+
+
 
 def visualize_loss(losses):
     """
@@ -150,21 +180,30 @@ def main():
     model = MLP(classes)
     logits = model(x_train[:5])
     print("logits shape:", logits.shape)
+    print(type(model).loss, model.__dict__.get("loss", "not set on instance"))
     print("loss:", model.loss(logits, y_train[:5]))
     print("accuracy:", model.accuracy(logits, y_train[:5]))
     optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
 
     # TODO: assignment.main() pt 3
     # Train your model
-
+    num_epochs = 10
+    for epoch in range(num_epochs):
+        train(model, optimizer, x_train, y_train)
+    print("max pixel:", tf.reduce_max(x_train))
+    print("learning rate:", optimizer.learning_rate)
+    print("train acc:", model.accuracy(model(x_train[:3000]), y_train[:3000]))
     # TODO: assignment.main() pt 4
     # Test your model
+    test_acc, test_preds = test(model, x_test, y_test)
 
     # TODO: assignment.main() pt 5
     # Save your predictions as either "predictions_cnn.npy" or "predictions_mlp.npy"
     #   depending on which model you are using
     # You will submit these prediction files to the autograder with predictions
     #    For the CAT, DEER, and DOG classes
+    print("Test accuracy:", test_acc)
+    np.save("predictions_mlp.npy", test_preds.numpy())
     return
 
 

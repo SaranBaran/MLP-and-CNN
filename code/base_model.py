@@ -33,5 +33,5 @@ class CifarModel(tf.keras.Model):
 		#accuracy
 		logits_max = tf.argmax(logits, 1)
 		labels_max = tf.argmax(labels, 1)
-		convert = tf.cast(tf.equals(logits_max,labels_max))
+		convert = tf.cast(tf.equal(logits_max,labels_max), tf.float32)
 		return tf.reduce_mean(convert)
