@@ -27,9 +27,9 @@ class CNN(CifarModel):
         # Initialize all hyperparameters
         self.loss_list = []
         self.batch_size = 64
-        self.input_width = ???
-        self.input_height = ???
-        self.image_channels = ???
+        self.input_width = 32
+        self.input_height = 32
+        self.image_channels = 3
         self.num_classes = len(classes)
 
         self.hidden_layer_size = 320
@@ -37,6 +37,27 @@ class CNN(CifarModel):
         self.epsilon = 1e-3  # this is used for batch normalization only!
 
         # Fill the rest of this out!
+        self.filters = 32
+        self.kernel_size = 3
+        self.padding = "same"
+        self.pool_size=2
+
+        self.conv_1 = tf.keras.layers.Conv2D(filters=self.filters, kernel_size=self.kernel_size, padding=self.padding)
+        self.bn_1   = tf.keras.layers.BatchNormalization()
+        self.relu_1 = tf.keras.layers.ReLU()
+        self.pool_1 = tf.keras.layers.MaxPooling2D(self.pool_size)
+        self.conv_2 = tf.keras.layers.Conv2D(filters=self.filters, kernel_size=self.kernel_size, padding=self.padding)
+        self.bn_2   = tf.keras.layers.BatchNormalization()
+        self.relu_2 = tf.keras.layers.ReLU()
+        self.pool_2 = tf.keras.layers.MaxPooling2D(self.pool_size)
+        self.conv_3 = tf.keras.layers.Conv2D(filters=self.filters, kernel_size=self.kernel_size, padding=self.padding)
+        self.bn_3   = tf.keras.layers.BatchNormalization()
+        self.relu_3 = tf.keras.layers.ReLU()
+        self.flatten = tf.keras.layers.Flatten()
+        self.hidden_layer_1 = tf.keras.layers.Dense(self.hidden_layer_size,activation='relu')
+        self.hidden_layer_2 = tf.keras.layers.Dense(self.hidden_layer_size,activation='relu')
+        self.hidden_layer_3 = tf.keras.layers.Dense(self.hidden_layer_size,activation='relu')
+        self.output_layer = tf.keras.layers.Dense(self.num_classes, activation=None)
 
     def call(self, inputs, is_testing=False):
         """
@@ -49,5 +70,26 @@ class CNN(CifarModel):
         # shape of input = (num_inputs (or batch_size), in_height, in_width, in_channels)
         # shape of filter = (filter_height, filter_width, in_channels, out_channels)
         # shape of strides = (batch_stride, height_stride, width_stride, channels_stride)
+        x = inputs
+        x = self.conv_1(x)
+        x = self.bn_1(x)  
+        x = self.relu_1(x)
+        x = self.pool_1(x) 
+        x = self.conv_2(x)
+        x = self.bn_2(x)   
+        x = self.relu_2(x)
+        x = self.pool_2(x)
+        x = self.conv_3(x)
+        x = self.bn_3(x)
+        x = self.relu_3(x)
+        x = self.flatten(x)
+        x = self.hidden_layer_1(x)
+        if not is_testing:
+            x = tf.nn.dropout(x, rate=0.3)
+        x = self.hidden_layer_2(x)
+        if not is_testing:
+            x = tf.nn.dropout(x, rate=0.3)
+        x = self.hidden_layer_3(x) 
+        x = self.output_layer(x)
+        return x
 
-        raise NotImplementedError("Implement me!")

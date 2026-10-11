@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from matplotlib import pyplot as plt
 from preprocess import get_data, get_next_batch
-#from cnn import CNN
+from cnn import CNN
 from mlp import MLP
 
 import os
@@ -33,8 +33,9 @@ def train(model, optimizer, train_inputs, train_labels):
     shuffled_labels = tf.gather(train_labels, shuffled_range)
     num_batches = int(np.ceil(train_inputs.shape[0] / model.batch_size))
     for i in range(num_batches):
+        
         batch_inputs, batch_label = get_next_batch(i,shuffled_inputs, shuffled_labels,model.batch_size)
-        #batch_inputs = tf.image.random_flip_left_right(batch_inputs)
+        batch_inputs = tf.image.random_flip_left_right(batch_inputs)
         with tf.GradientTape() as tape:
             output = model.call(batch_inputs, False)
             loss = model.loss(output,batch_label)
@@ -177,7 +178,10 @@ def main():
 
     # TODO: assignment.main() pt 2
     # Initialize your model and optimizer
-    model = MLP(classes)
+    
+    
+    #model = MLP(classes)
+    model = CNN(classes)
     logits = model(x_train[:5])
     print("logits shape:", logits.shape)
     print(type(model).loss, model.__dict__.get("loss", "not set on instance"))
@@ -203,7 +207,8 @@ def main():
     # You will submit these prediction files to the autograder with predictions
     #    For the CAT, DEER, and DOG classes
     print("Test accuracy:", test_acc)
-    np.save("predictions_mlp.npy", test_preds.numpy())
+    #np.save("predictions_mlp.npy", test_preds.numpy())
+    np.save("predictions_cnn.npy", test_preds.numpy())
     return
 
 
