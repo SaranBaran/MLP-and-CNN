@@ -46,3 +46,29 @@ class ManualConv2d(tf.keras.layers.Layer):
         filter_height, filter_width, filter_in_channels, filter_out_channels = self.filters.shape
 
         # fill out the rest!
+        filters = tf.cast(self.filters, tf.float32)
+        bias = tf.cast(self.bias, tf.float32) if self.use_bias else None
+        if input_in_channels != filter_in_channels:
+            raise ValueError("number of input in channels are not the same as the filter’s in channels")
+        if self.padding == "SAME":
+            pad_total_h = filter_height - 1
+            pad_total_w = filter_width - 1
+            pad_top = pad_total_h // 2            
+            pad_bottom = pad_total_h - pad_top
+            pad_left = pad_total_w // 2
+            pad_right = pad_total_w - pad_left
+            inputs = tf.pad(inputs, [[0, 0], [pad_top, pad_bottom], [pad_left, pad_right], [0, 0]])
+        out_height = inputs.shape[1] - filter_height + 1
+        out_width = inputs.shape[2] - filter_width + 1
+        rows = []
+        for i in range(out_height):            
+            row = []
+            for j in range(out_width):         
+                patch = inputs[:, i:i + filter_height, j:j + filter_width, :]
+                value = tf.tensordot(patch, filters, axes=[[1, 2, 3], [0, 1, 2]])
+                row.append(value)
+            rows.append(tf.stack(row, axis=1))
+        output = tf.stack(rows, axis=1)
+        if self.use_bias:
+            output = output + bias
+        return tf.convert_to_tensor(output, dtype=tf.float32)

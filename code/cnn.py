@@ -41,21 +41,30 @@ class CNN(CifarModel):
         self.kernel_size = 3
         self.padding = "same"
         self.pool_size=2
+        self.filters_1 = 32
+        self.filters_2 = 64
+        self.filters_3 = 64
+        self.dropout_rate = 0.4
 
-        self.conv_1 = tf.keras.layers.Conv2D(filters=self.filters, kernel_size=self.kernel_size, padding=self.padding)
+        self.conv_1 = tf.keras.layers.Conv2D(filters=self.filters_1, kernel_size=self.kernel_size, padding=self.padding)
         self.bn_1   = tf.keras.layers.BatchNormalization()
         self.relu_1 = tf.keras.layers.ReLU()
         self.pool_1 = tf.keras.layers.MaxPooling2D(self.pool_size)
-        self.conv_2 = tf.keras.layers.Conv2D(filters=self.filters, kernel_size=self.kernel_size, padding=self.padding)
+        self.conv_2 = tf.keras.layers.Conv2D(filters=self.filters_2, kernel_size=self.kernel_size, padding=self.padding)
         self.bn_2   = tf.keras.layers.BatchNormalization()
         self.relu_2 = tf.keras.layers.ReLU()
         self.pool_2 = tf.keras.layers.MaxPooling2D(self.pool_size)
-        self.conv_3 = tf.keras.layers.Conv2D(filters=self.filters, kernel_size=self.kernel_size, padding=self.padding)
+        self.conv_3 = tf.keras.layers.Conv2D(filters=self.filters_3, kernel_size=self.kernel_size, padding=self.padding)
         self.bn_3   = tf.keras.layers.BatchNormalization()
         self.relu_3 = tf.keras.layers.ReLU()
+        self.manual_conv_3 = ManualConv2d(
+            [self.kernel_size, self.kernel_size, self.filters_2, self.filters_3],
+            padding="SAME", trainable=False)
         self.flatten = tf.keras.layers.Flatten()
         self.hidden_layer_1 = tf.keras.layers.Dense(self.hidden_layer_size,activation='relu')
+        self.dropout_1 = tf.keras.layers.Dropout(self.dropout_rate)
         self.hidden_layer_2 = tf.keras.layers.Dense(self.hidden_layer_size,activation='relu')
+        self.dropout_2 = tf.keras.layers.Dropout(self.dropout_rate)
         self.hidden_layer_3 = tf.keras.layers.Dense(self.hidden_layer_size,activation='relu')
         self.output_layer = tf.keras.layers.Dense(self.num_classes, activation=None)
 
@@ -79,17 +88,22 @@ class CNN(CifarModel):
         x = self.bn_2(x)   
         x = self.relu_2(x)
         x = self.pool_2(x)
-        x = self.conv_3(x)
+        if is_testing:
+            if not self.conv_3.weights:    
+                self.conv_3(x)
+            kernel, bias = self.conv_3.get_weights()
+            self.manual_conv_3.set_weights(kernel, bias)
+            x = self.manual_conv_3(x)     
+        else:
+            x = self.conv_3(x)
         x = self.bn_3(x)
         x = self.relu_3(x)
         x = self.flatten(x)
         x = self.hidden_layer_1(x)
-        if not is_testing:
-            x = tf.nn.dropout(x, rate=0.3)
+        x = self.dropout_1(x)
         x = self.hidden_layer_2(x)
-        if not is_testing:
-            x = tf.nn.dropout(x, rate=0.3)
-        x = self.hidden_layer_3(x) 
+        x = self.dropout_2(x)
+        #x = self.hidden_layer_3(x) 
         x = self.output_layer(x)
         return x
 

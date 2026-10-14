@@ -37,7 +37,7 @@ def train(model, optimizer, train_inputs, train_labels):
         batch_inputs, batch_label = get_next_batch(i,shuffled_inputs, shuffled_labels,model.batch_size)
         batch_inputs = tf.image.random_flip_left_right(batch_inputs)
         with tf.GradientTape() as tape:
-            output = model.call(batch_inputs, False)
+            output = model(batch_inputs, training=True)
             loss = model.loss(output,batch_label)
             acc = model.accuracy(output,batch_label)
         gradients = tape.gradient(loss, model.trainable_variables)
@@ -180,8 +180,8 @@ def main():
     # Initialize your model and optimizer
     
     
-    model = MLP(classes)
-    #model = CNN(classes)
+    #model = MLP(classes)
+    model = CNN(classes)
     logits = model(x_train[:5])
     print("logits shape:", logits.shape)
     print(type(model).loss, model.__dict__.get("loss", "not set on instance"))
@@ -207,8 +207,8 @@ def main():
     # You will submit these prediction files to the autograder with predictions
     #    For the CAT, DEER, and DOG classes
     print("Test accuracy:", test_acc)
-    np.save("predictions_mlp.npy", test_preds.numpy())
-    #np.save("predictions_cnn.npy", test_preds.numpy())
+    #np.save("predictions_mlp.npy", test_preds.numpy())
+    np.save("predictions_cnn.npy", test_preds.numpy())
     return
 
 
