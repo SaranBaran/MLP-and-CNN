@@ -51,11 +51,7 @@ class MLP(CifarModel):
         #bu düz forward pass datayı önden geçiriyoruz
         flattened_inputs = tf.reshape(inputs, (-1, self.input_width*self.input_height*self.image_channels))
         output_hidden_layer_1 = self.hidden_layer_1(flattened_inputs)
-        if not is_testing:
-            output_hidden_layer_1 = tf.nn.dropout(output_hidden_layer_1, rate=0.3)
         output_hidden_layer_2 = self.hidden_layer_2(output_hidden_layer_1)
-        if not is_testing:
-            output_hidden_layer_2 = tf.nn.dropout(output_hidden_layer_2, rate=0.3)
         output_hidden_layer_3 = self.hidden_layer_3(output_hidden_layer_2)
         x = self.output_layer(output_hidden_layer_3)
         return x

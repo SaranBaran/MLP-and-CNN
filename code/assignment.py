@@ -66,7 +66,7 @@ def test(model, test_inputs, test_labels):
     total_correct = 0
     all_preds = [] 
     for i in range(num_batches):
-        batch_inputs, batch_label = get_next_batch(i,shuffled_inputs, shuffled_labels,model.batch_size)
+        batch_inputs, batch_label = get_next_batch(i,test_inputs, test_labels,model.batch_size)
         output = model.call(batch_inputs, True)
         acc = model.accuracy(output, batch_label)
         all_preds.append(output) 
@@ -180,8 +180,8 @@ def main():
     # Initialize your model and optimizer
     
     
-    #model = MLP(classes)
-    model = CNN(classes)
+    model = MLP(classes)
+    #model = CNN(classes)
     logits = model(x_train[:5])
     print("logits shape:", logits.shape)
     print(type(model).loss, model.__dict__.get("loss", "not set on instance"))
@@ -191,7 +191,7 @@ def main():
 
     # TODO: assignment.main() pt 3
     # Train your model
-    num_epochs = 10
+    num_epochs = 20
     for epoch in range(num_epochs):
         train(model, optimizer, x_train, y_train)
     print("max pixel:", tf.reduce_max(x_train))
@@ -207,8 +207,8 @@ def main():
     # You will submit these prediction files to the autograder with predictions
     #    For the CAT, DEER, and DOG classes
     print("Test accuracy:", test_acc)
-    #np.save("predictions_mlp.npy", test_preds.numpy())
-    np.save("predictions_cnn.npy", test_preds.numpy())
+    np.save("predictions_mlp.npy", test_preds.numpy())
+    #np.save("predictions_cnn.npy", test_preds.numpy())
     return
 
 
